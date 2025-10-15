@@ -5,7 +5,7 @@ on:
 
 每天 UTC 9點 (台灣時間下午 5點) 自動執行
 schedule:
-- cron: '0 9 * * *'
+    - cron: '0 9 * * *'  <--- 這裡必須有兩個空格，且用 `- `
 
 允許手動點擊 Actions 頁面的 "Run workflow" 按鈕來觸發
 workflow_dispatch:
