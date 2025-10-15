@@ -1,12 +1,13 @@
 name: Lotto Report Auto-Deploy
 
-設定排程：每天上午 9:00 執行 (台灣時間下午 5:00)
-註: cron 時間是 UTC 時間。台灣時區為 UTC+8，所以 17點 (下午 5點) 對應 UTC 9點。
+設定工作流觸發條件
 on:
+
+每天 UTC 9點 (台灣時間下午 5點) 自動執行
 schedule:
 - cron: '0 9 * * *'
 
-也可以手動觸發 workflow
+允許手動點擊 Actions 頁面的 "Run workflow" 按鈕來觸發
 workflow_dispatch:
 
 jobs:
@@ -25,11 +26,9 @@ uses: actions/checkout@v4
       
   # 3. 安裝 Python 依賴
   - name: Install dependencies
-    run: |
-      pip install pandas
+    run: pip install pandas
 
-  # 4. 運行報告生成腳本 (將數據嵌入 historical_matrix.html)
-  #    此步驟會將數據寫入 historical_matrix.html
+  # 4. 運行報告生成腳本 (將數據寫入 historical_matrix.html)
   - name: Generate HTML Report
     run: python generate_html_report.py
 
@@ -37,21 +36,19 @@ uses: actions/checkout@v4
   - name: Copy to Index for GitHub Pages
     run: cp historical_matrix.html index.html
     
-  # 6. 配置部署權限
+  # 6. 配置部署權限 (設定 Git 使用者資訊)
   - name: Configure Deployment Permissions
     run: |
       git config user.name "github-actions[bot]"
       git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
       
-  # **關鍵修復：發佈 gh-pages 分支**
-  # 7. 將生成的報告部署到 GitHub Pages
+  # 7. 部署到 GitHub Pages (將 index.html 發佈到 gh-pages 分支)
   - name: Deploy to GitHub Pages
     uses: peaceiris/actions-gh-pages@v4
     with:
       github_token: ${{ secrets.GITHUB_TOKEN }}
-      # 【關鍵修正】：指定發佈根目錄和 index.html
-      # 讓 action 將 index.html 發佈到網站的根目錄
-      publish_dir: ./
+      # 【關鍵發佈路徑】：告訴 Action 發佈根目錄下的 index.html
+      publish_dir: ./ 
       destination_dir: .
       publish_branch: gh-pages # 部署到 gh-pages 分支
       force_orphan: true 
