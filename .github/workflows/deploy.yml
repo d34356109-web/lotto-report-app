@@ -44,10 +44,17 @@ uses: actions/checkout@v4
   - name: Generate HTML Report
     run: python generate_html_report.py
 
+  # **關鍵修正**
   # 6. 將生成的報告部署到 GitHub Pages (這是讓手機看到網站的步驟)
   - name: Deploy to GitHub Pages
     uses: peaceiris/actions-gh-pages@v4
     with:
       github_token: ${{ secrets.GITHUB_TOKEN }}
-      publish_dir: ./ # 部署整個專案目錄 (內含 historical_matrix.html)
+      # 修正: 告訴部署服務將 historical_matrix.html 檔案發佈到網站的根目錄
+      # 備註: GitHub Pages 會尋找 index.html 或 .html 檔案
+      publish_dir: ./
+      destination_dir: .
+      exclude: .git*
+      # 確保 deploy.yml 的檔案名稱與 GitHub Pages 的設定一致
+      cname: ${{ github.event_name == 'workflow_dispatch' && 'deploy' || '' }}
       publish_branch: gh-pages # 部署到 gh-pages 分支
