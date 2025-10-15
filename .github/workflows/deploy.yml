@@ -23,38 +23,38 @@ uses: actions/checkout@v4
     with:
       python-version: '3.x'
       
-  # 3. 安裝 Python 依賴 (這裡是執行 CSV 處理或爬蟲所需要的函式庫)
+  # 3. 安裝 Python 依賴
   - name: Install dependencies
     run: |
-      # 這裡假設您的腳本需要 pandas 才能讀取或處理數據
       pip install pandas
 
-  # 4. 運行您的數據腳本 (確保 history_data.json 是最新的)
-  # 警告：此步驟是佔位符，在實際部署中您需要將您的爬蟲邏輯放在這裡，
-  # 以確保 history_data.json 檔案是更新的。
+  # 4. 運行您的數據腳本 (這裡需要確保 history_data.json 是最新的，這是佔位符)
   - name: Run Data Update Script (Placeholder)
-    # 由於雲端無法存取您的本地 Excel，這個步驟需要您調整您的 update_539_integrated.py，
-    # 讓它改為從網路上抓取最新的彩券數據。
     run: |
       echo "Simulating data update process..."
-      # 範例: 如果您的 update_539_integrated.py 已經有爬蟲功能，請在這裡執行它
-      # python update_539_integrated.py ... 
+      # 【重要提示】: 在實際部署中，您需要將您的爬蟲程式碼放在這裡！
+      # 例如: python update_539_integrated.py ...
   
-  # 5. 運行報告生成腳本 (讀取 JSON 並將數據嵌入 HTML)
+  # 5. 運行報告生成腳本 (將數據嵌入 historical_matrix.html)
   - name: Generate HTML Report
     run: python generate_html_report.py
 
-  # **關鍵修正**
-  # 6. 將生成的報告部署到 GitHub Pages (這是讓手機看到網站的步驟)
+  # **關鍵修復：配置權限**
+  - name: Configure Deployment Permissions
+    run: |
+      git config user.name "github-actions[bot]"
+      git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+      
+  # **關鍵修復：發佈 gh-pages 分支**
+  # 6. 將生成的報告部署到 GitHub Pages
   - name: Deploy to GitHub Pages
     uses: peaceiris/actions-gh-pages@v4
     with:
       github_token: ${{ secrets.GITHUB_TOKEN }}
-      # 修正: 告訴部署服務將 historical_matrix.html 檔案發佈到網站的根目錄
-      # 備註: GitHub Pages 會尋找 index.html 或 .html 檔案
-      publish_dir: ./
+      # 修正發佈路徑和檔案名稱
+      publish_dir: ./ 
       destination_dir: .
-      exclude: .git*
-      # 確保 deploy.yml 的檔案名稱與 GitHub Pages 的設定一致
-      cname: ${{ github.event_name == 'workflow_dispatch' && 'deploy' || '' }}
       publish_branch: gh-pages # 部署到 gh-pages 分支
+      # 部署時，將 historical_matrix.html 複製並命名為 index.html，讓網站可以訪問
+      force_orphan: true 
+      keep_files: false
