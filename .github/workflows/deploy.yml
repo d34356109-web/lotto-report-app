@@ -28,33 +28,31 @@ uses: actions/checkout@v4
     run: |
       pip install pandas
 
-  # 4. 運行您的數據腳本 (這裡需要確保 history_data.json 是最新的，這是佔位符)
-  - name: Run Data Update Script (Placeholder)
-    run: |
-      echo "Simulating data update process..."
-      # 【重要提示】: 在實際部署中，您需要將您的爬蟲程式碼放在這裡！
-      # 例如: python update_539_integrated.py ...
-  
-  # 5. 運行報告生成腳本 (將數據嵌入 historical_matrix.html)
+  # 4. 運行報告生成腳本 (將數據嵌入 historical_matrix.html)
+  #    此步驟會將數據寫入 historical_matrix.html
   - name: Generate HTML Report
     run: python generate_html_report.py
 
-  # **關鍵修復：配置權限**
+  # 5. 將最終報告複製為 index.html (GitHub Pages 的預設首頁)
+  - name: Copy to Index for GitHub Pages
+    run: cp historical_matrix.html index.html
+    
+  # 6. 配置部署權限
   - name: Configure Deployment Permissions
     run: |
       git config user.name "github-actions[bot]"
       git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
       
   # **關鍵修復：發佈 gh-pages 分支**
-  # 6. 將生成的報告部署到 GitHub Pages
+  # 7. 將生成的報告部署到 GitHub Pages
   - name: Deploy to GitHub Pages
     uses: peaceiris/actions-gh-pages@v4
     with:
       github_token: ${{ secrets.GITHUB_TOKEN }}
-      # 修正發佈路徑和檔案名稱
-      publish_dir: ./ 
+      # 【關鍵修正】：指定發佈根目錄和 index.html
+      # 讓 action 將 index.html 發佈到網站的根目錄
+      publish_dir: ./
       destination_dir: .
       publish_branch: gh-pages # 部署到 gh-pages 分支
-      # 部署時，將 historical_matrix.html 複製並命名為 index.html，讓網站可以訪問
       force_orphan: true 
       keep_files: false
