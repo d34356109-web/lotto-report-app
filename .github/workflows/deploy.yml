@@ -1,11 +1,10 @@
 name: Lotto Report Auto-Deploy
 
-設定工作流觸發條件
 on:
 
 每天 UTC 9點 (台灣時間下午 5點) 自動執行
 schedule:
-    - cron: '0 9 * * *'  <--- 這裡必須有兩個空格，且用 `- `
+- cron: '0 9 * * *'
 
 允許手動點擊 Actions 頁面的 "Run workflow" 按鈕來觸發
 workflow_dispatch:
@@ -14,7 +13,7 @@ jobs:
 build-and-deploy:
 runs-on: ubuntu-latest
 steps:
-# 1. 檢出程式碼 (將 GitHub 倉庫的檔案下載到雲端伺服器)
+# 1. 檢出程式碼
 - name: Checkout Repository
 uses: actions/checkout@v4
 
@@ -36,20 +35,17 @@ uses: actions/checkout@v4
   - name: Copy to Index for GitHub Pages
     run: cp historical_matrix.html index.html
     
-  # 6. 配置部署權限 (設定 Git 使用者資訊)
+  # 6. 配置部署權限
   - name: Configure Deployment Permissions
     run: |
       git config user.name "github-actions[bot]"
       git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
       
-  # 7. 部署到 GitHub Pages (將 index.html 發佈到 gh-pages 分支)
+  # 7. 部署到 GitHub Pages
   - name: Deploy to GitHub Pages
     uses: peaceiris/actions-gh-pages@v4
     with:
       github_token: ${{ secrets.GITHUB_TOKEN }}
-      # 【關鍵發佈路徑】：告訴 Action 發佈根目錄下的 index.html
       publish_dir: ./ 
-      destination_dir: .
-      publish_branch: gh-pages # 部署到 gh-pages 分支
-      force_orphan: true 
-      keep_files: false
+      publish_branch: gh-pages
+      force_orphan: true
