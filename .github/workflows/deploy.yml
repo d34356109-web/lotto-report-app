@@ -1,47 +1,47 @@
 name: Lotto Report Auto-Deploy
 
 on:
-schedule:
-- cron: '0 9 * * *' # 每天 UTC 9點 (台灣時間下午 5點) 自動執行
-workflow_dispatch: # 允許手動點擊 Actions 頁面的 "Run workflow" 按鈕來觸發
+  schedule:
+    - cron: '0 9 * * *' # 每天 UTC 9點 (台灣時間下午 5點) 自動執行
+  workflow_dispatch: # 允許手動點擊 Actions 頁面的 "Run workflow" 按鈕來觸發
 
 jobs:
-build-and-deploy:
-runs-on: ubuntu-latest
-steps:
-# 1. 檢出程式碼
-- name: Checkout Repository
-uses: actions/checkout@v4
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # 1. 檢出程式碼
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        
+      # 2. 設定 Python 環境
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+          
+      # 3. 安裝 Python 依賴
+      - name: Install dependencies
+        run: pip install pandas
 
-  # 2. 設定 Python 環境
-  - name: Set up Python
-    uses: actions/setup-python@v5
-    with:
-      python-version: '3.x'
-      
-  # 3. 安裝 Python 依賴
-  - name: Install dependencies
-    run: pip install pandas
+      # 4. 運行報告生成腳本
+      - name: Generate HTML Report
+        run: python generate_html_report.py
 
-  # 4. 運行報告生成腳本 (將數據寫入 historical_matrix.html)
-  - name: Generate HTML Report
-    run: python generate_html_report.py
-
-  # 5. 將最終報告複製為 index.html (GitHub Pages 的預設首頁)
-  - name: Copy to Index for GitHub Pages
-    run: cp historical_matrix.html index.html
-    
-  # 6. 配置部署權限
-  - name: Configure Deployment Permissions
-    run: |
-      git config user.name "github-actions[bot]"
-      git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-      
-  # 7. 部署到 GitHub Pages
-  - name: Deploy to GitHub Pages
-    uses: peaceiris/actions-gh-pages@v4
-    with:
-      github_token: ${{ secrets.GITHUB_TOKEN }}
-      publish_dir: ./ 
-      publish_branch: gh-pages
-      force_orphan: true
+      # 5. 將報告複製為 index.html (GitHub Pages 的預設首頁)
+      - name: Copy to Index for GitHub Pages
+        run: cp historical_matrix.html index.html
+        
+      # 6. 配置部署權限 (重要：設定 Git 使用者)
+      - name: Configure Deployment Permissions
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          
+      # 7. 部署到 GitHub Pages (將 index.html 發佈到 gh-pages 分支)
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./ 
+          publish_branch: gh-pages
+          force_orphan: true
