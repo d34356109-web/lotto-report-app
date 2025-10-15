@@ -31,13 +31,7 @@ jobs:
       - name: Copy to Index for GitHub Pages
         run: cp historical_matrix.html index.html
         
-      # 6. 配置部署權限 (重要：設定 Git 使用者)
-      - name: Configure Deployment Permissions
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          
-      # 7. 部署到 GitHub Pages (將 index.html 發佈到 gh-pages 分支)
+      # 6. 部署到 GitHub Pages (將 index.html 發佈到 gh-pages 分支)
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v4
         with:
