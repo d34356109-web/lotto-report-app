@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>今彩539 歷史開獎矩陣</title>
+    <!-- 載入 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800;900&display=swap'); /* 載入更粗的字體 */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f8f8;
+        }
+        /* 設置表格容器水平滾動 */
+        .table-container {
+            overflow-x: auto;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.06);
+        }
+        /* 表格樣式 */
+        #historyTable {
+            width: 100%;
+            min-width: 700px; 
+            border-collapse: collapse; 
+        }
+        #historyTable th, #historyTable td {
+            text-align: center;
+            border: 1px solid #d1d5db; 
+            padding: 0; 
+            height: auto; 
+            font-weight: 900; /* 使用最粗的字體 */
+        }
+        
+        /* 基礎資訊欄位 (月, 日, 星期) 的樣式 */
+        #historyTable td:nth-child(1), /* 月 */
+        #historyTable td:nth-child(2), /* 日 */
+        #historyTable td:nth-child(3), /* 星期 */
+        #historyTable th {
+             padding: 8px 4px; /* 緊湊的 padding */
+             white-space: nowrap;
+             font-size: 0.9rem;
+        }
+        #historyTable th {
+            background-color: #4b5563; 
+            color: white;
+        }
+        
+        /* 號碼單元格基礎樣式 */
+        #historyTable td:nth-child(n+4):not(.separator-col) {
+            width: 32px; /* 號碼單元格固定寬度 */
+            padding: 4px 0;
+            background-color: #e5e7eb; 
+            color: #1f2937; 
+            /* 修正：字體最大化 */
+            font-size: 1.5rem;
+            line-height: 1.5rem; /* 確保行高不會造成額外空間 */
+        }
+        
+        /* --- 標註顏色 (顏色填充，字體高對比) --- */
+        /* 1. 第一個號碼：青綠 (#00D084) - 淺底配深字 */
+        .highlight-1 { background-color: #00D084 !important; color: #1f2937 !important; }
+        /* 2. 第二個號碼：寶藍 (#3B82F6) - 深底配白字 */
+        .highlight-2 { background-color: #3B82F6 !important; color: white !important; }
+        /* 3. 第三個號碼：金橙 (#F59E0B) - 淺底配深字 */
+        .highlight-3 { background-color: #F59E0B !important; color: #1f2937 !important; }
+        /* 4. 第四個號碼：紫紅 (#EC4899) - 深底配白字 */
+        .highlight-4 { background-color: #EC4899 !important; color: white !important; }
+        /* 5. 第五個號碼：深紅 (#EF4444) - 深底配白字 */
+        .highlight-5 { background-color: #EF4444 !important; color: white !important; }
+        /* --- 標註顏色結束 --- */
+        
+        /* --- 分隔欄樣式 --- */
+        .separator-col {
+            background-color: #a5b4fc !important; 
+            width: 15px; 
+            padding: 0 !important;
+            border-left: none !important; 
+            border-right: none !important;
+        }
+        
+        /* --- 確保 Sticky 欄位的背景顏色一致 --- */
+        .sticky-col {
+            position: sticky;
+            z-index: 10;
+            background-color: white; 
+            overflow: hidden; 
+            text-overflow: ellipsis; 
+        }
+        /* 針對第 3 個粘性欄位 (星期) 調整背景色 */
+        #historyTable tbody .sticky-col:nth-child(3) {
+            background-color: #f3f4f6; 
+        }
+        
+        /* 頂部標題 Z-index 確保在滾動時蓋住數據 */
+        #historyTable thead th {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+        }
+
+        /* 凍結欄位位置修正 */
+        /* 1. 月: 30px */
+        .sticky-col:nth-child(1) { left: 0px; width: 30px; } 
+        #historyTable th:nth-child(1), #historyTable td:nth-child(1) { width: 30px; }
+
+        /* 2. 日: 30px (left: 30px) */
+        .sticky-col:nth-child(2) { left: 30px; width: 30px; } 
+        #historyTable th:nth-child(2), #historyTable td:nth-child(2) { width: 30px; }
+        
+        /* 3. 星期: 15px (left: 30px + 30px = 60px) */
+        .sticky-col:nth-child(3) { left: 60px; width: 15px; } 
+        #historyTable th:nth-child(3), #historyTable td:nth-child(3) { width: 15px; }
+
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-screen-xl mx-auto">
+        <h1 class="text-3xl font-extrabold text-gray-800 text-center mb-4">今彩539 歷史開獎紀錄矩陣</h1>
+        <p class="text-center text-sm text-gray-500 mb-6">由於瀏覽器安全限制，無法自動存取本地檔案。請使用下方按鈕手動載入 **history_data.json**。</p>
+
+        <!-- 檔案上傳控制區塊 - 備用手動載入模式 -->
+        <div id="loadingStatus" class="mb-6 flex flex-col sm:flex-row items-center justify-center space-y-3 sm:space-y-0 sm:space-x-4 p-4 bg-red-100 rounded-xl shadow-lg text-red-700 font-semibold">
+            <span id="autoLoadMessage">請點擊「手動載入數據」按鈕。</span>
+            <div id="manualLoadArea" class="flex items-center space-x-3">
+                <input 
+                    type="file" 
+                    id="jsonFile" 
+                    accept=".json" 
+                    class="block w-full sm:w-auto text-sm text-gray-500
+                        file:mr-4 file:py-2 file:px-4
+                        file:rounded-full file:border-0
+                        file:text-sm file:font-semibold
+                        file:bg-red-50 file:text-red-700
+                        hover:file:bg-red-100"
+                />
+                <button 
+                    id="loadButton"
+                    onclick="handleManualFileLoad()"
+                    class="w-full sm:w-auto px-6 py-2 bg-red-600 text-white font-semibold rounded-full shadow-md hover:bg-red-700 transition duration-150 ease-in-out disabled:opacity-50"
+                    disabled
+                >
+                    手動載入數據
+                </button>
+            </div>
+        </div>
+        
+        <!-- 表格容器 -->
+        <div class="table-container bg-white">
+            <table id="historyTable">
+                <thead>
+                    <tr>
+                        <!-- 欄位總數為 14 (月, 日, 星期, 10個號碼, 分隔欄) -->
+                        <th rowspan="2" class="sticky left-0 bg-gray-700">月</th>
+                        <th rowspan="2" class="sticky left-[30px] bg-gray-700">日</th>
+                        <th rowspan="2" class="sticky left-[60px] bg-gray-700">星期</th>
+                        <th colspan="5" class="bg-indigo-600">大小順序 (Ascending Order)</th>
+                        <th rowspan="2" class="separator-col bg-gray-700"></th> <!-- 分隔欄位 TH -->
+                        <th colspan="5" class="bg-red-600">落球順序 (Draw Order)</th>
+                    </tr>
+                    <tr>
+                        <th class="bg-indigo-500">號碼 1</th>
+                        <th class="bg-indigo-500">號碼 2</th>
+                        <th class="bg-indigo-500">號碼 3</th>
+                        <th class="bg-indigo-500">號碼 4</th>
+                        <th class="bg-indigo-500">號碼 5</th>
+                        <th class="bg-red-500">球號 1</th>
+                        <th class="bg-red-500">球號 2</th>
+                        <th class="bg-red-500">球號 3</th>
+                        <th class="bg-red-500">球號 4</th>
+                        <th class="bg-red-500">球號 5</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr><td colspan="14" class="text-center py-8 text-gray-500">等待檔案載入...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const tableBody = document.getElementById('tableBody');
+        const loadingStatus = document.getElementById('loadingStatus');
+        const autoLoadMessage = document.getElementById('autoLoadMessage');
+        const manualLoadArea = document.getElementById('manualLoadArea');
+        const fileInput = document.getElementById('jsonFile');
+        const loadButton = document.getElementById('loadButton');
+
+        
+        const COL_SPAN = 14; // 新的總欄位數 (月, 日, 星期, 5x2 號碼, 分隔欄)
+
+        // 監聽檔案輸入框的變化，啟用/禁用載入按鈕
+        fileInput.addEventListener('change', () => {
+            loadButton.disabled = fileInput.files.length === 0;
+        });
+
+        // --- 輔助函式 ---
+        
+        /**
+         * 渲染單個號碼單元格
+         */
+        function renderBall(number, latestNumbersMap) {
+            const num = String(number).padStart(2, '0');
+            let highlightClass = '';
+            
+            if (latestNumbersMap && latestNumbersMap.has(number)) {
+                const index = latestNumbersMap.get(number);
+                highlightClass = ` highlight-${index}`;
+            }
+            
+            // 標註顏色時，將 highlightClass 套用到 td 上，內容為號碼
+            return `<td class="${highlightClass}">${num}</td>`;
+        }
+        
+        /**
+         * 從期別字串中提取年份
+         */
+        function extractYear(period) {
+            if (period && period.length >= 5 && period.startsWith('D')) {
+                return period.substring(1, 5);
+            }
+            return '';
+        }
+
+        /**
+         * 渲染整個歷史數據表格
+         */
+        function renderHistoryTable(historyData) {
+            let html = '';
+
+            if (historyData.length === 0) {
+                 tableBody.innerHTML = `<tr><td colspan="${COL_SPAN}" class="text-center py-8 text-gray-500">檔案中沒有數據可顯示。</td></tr>`;
+                 return;
+            }
+
+            // 1. 處理最新一期的號碼，建立 Map 映射
+            const latestDrawArray = historyData[0].draw || historyData[0].asc || []; // 使用落球順序作為標註依據
+            const latestNumbersMap = new Map();
+            latestDrawArray.forEach((num, index) => {
+                latestNumbersMap.set(num, index + 1); 
+            });
+            
+            let previousMonth = null; // 用來追蹤前一筆資料的月份
+
+            historyData.forEach((data) => {
+                // 拆分 月 和 日
+                const dateParts = data.date.split('/');
+                const currentMonth = dateParts.length > 0 ? dateParts[0] : '';
+                const day = dateParts.length > 1 ? dateParts[1] : '';
+
+                // 判斷是否為新的月份，只有在月份不同時才顯示月份
+                const monthDisplay = (currentMonth !== previousMonth) ? currentMonth : '';
+                previousMonth = currentMonth; // 更新前一筆資料的月份
+                
+                // 渲染主數據行
+                html += '<tr>';
+                
+                // 基礎資訊 (月, 日, 星期) - Sticky 欄位
+                html += `<td class="sticky-col text-xs">${monthDisplay}</td>`; // 月 (條件式顯示)
+                html += `<td class="sticky-col text-xs">${day}</td>`;   // 日
+                html += `<td class="sticky-col font-bold">${data.day}</td>`; // 星期
+
+                // 1. 大小順序 (Ascending Order)
+                data.asc.forEach(num => {
+                    html += renderBall(num, latestNumbersMap);
+                });
+                
+                // --- 分隔欄位 ---
+                html += `<td class="separator-col"></td>`;
+
+                // 2. 落球順序 (Draw Order)
+                data.draw.forEach(num => {
+                    html += renderBall(num, latestNumbersMap);
+                });
+
+                html += '</tr>';
+            });
+
+            tableBody.innerHTML = html;
+            // 載入成功後將狀態區塊轉為綠色提示
+            loadingStatus.classList.remove('bg-red-100', 'text-red-700');
+            loadingStatus.classList.add('bg-green-100', 'text-green-700');
+            autoLoadMessage.textContent = `成功載入數據 (共 ${historyData.length} 筆)`;
+            manualLoadArea.classList.add('hidden');
+        }
+
+        /**
+         * 處理手動檔案載入事件 (這是目前唯一可行的方法)
+         */
+        window.handleManualFileLoad = function() {
+            const file = fileInput.files[0];
+            if (!file) {
+                return;
+            }
+
+            tableBody.innerHTML = `<tr><td colspan="${COL_SPAN}" class="text-center py-8 text-gray-500">正在解析檔案...</td></tr>`;
+            loadButton.disabled = true;
+
+            const reader = new FileReader();
+
+            reader.onload = (e) => {
+                try {
+                    const jsonText = e.target.result;
+                    const historyData = JSON.parse(jsonText);
+                    
+                    if (!Array.isArray(historyData)) {
+                        throw new Error('JSON 格式錯誤：根元素不是陣列。');
+                    }
+
+                    renderHistoryTable(historyData);
+
+                } catch (error) {
+                    console.error("處理檔案內容時發生錯誤:", error);
+                    loadingStatus.classList.remove('bg-green-100', 'text-green-700', 'bg-white');
+                    loadingStatus.classList.add('bg-red-100', 'text-red-700');
+                    autoLoadMessage.textContent = `手動載入失敗：請確認檔案是有效的 JSON 格式。`;
+                    tableBody.innerHTML = `
+                        <tr><td colspan="${COL_SPAN}" class="text-center py-8 text-red-500">
+                            <strong>檔案解析錯誤。</strong>
+                        </td></tr>
+                    `;
+                } finally {
+                    loadButton.disabled = false;
+                }
+            };
+
+            reader.onerror = () => {
+                const errorMsg = '無法讀取檔案。';
+                console.error(errorMsg);
+                loadingStatus.classList.remove('bg-green-100', 'text-green-700', 'bg-white');
+                loadingStatus.classList.add('bg-red-100', 'text-red-700');
+                autoLoadMessage.textContent = `手動載入失敗：無法讀取檔案。`;
+                tableBody.innerHTML = `<tr><td colspan="${COL_SPAN}" class="text-center py-8 text-red-500"><strong>${errorMsg}</strong></td></tr>`;
+                loadButton.disabled = false;
+            };
+
+            reader.readAsText(file);
+        }
+
+        // 頁面載入完成後，初始化手動載入狀態
+        window.onload = function() {
+             loadButton.disabled = fileInput.files.length === 0;
+        };
+    </script>
+
+</body>
+</html>
